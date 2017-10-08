@@ -23,6 +23,7 @@ from statsmodels.formula.api import ols
 from statsmodels.stats.anova import anova_lm
 
 
+
 #Count number of unique clients
 def uniqueCounter(df,cid):
     print df[cid].nunique();
@@ -78,12 +79,23 @@ def homoscedasticity(data):
 
 def ANOVA(data):
     F, p = stats.f_oneway(*data)
+    print 'Standart one-way ANOVA test'
     if p < 0.05:
         return 'The median level is significanly different F = %f p-value = %f' % (p, F)
     elif p > 0.05:
         return 'Groups have the same median F = %f p-value = %f' % (p,F)
 
+def WILCOX(data):
+    p = stat.wilcoxon(*data)
+    print 'Standartone-way wilcox test'
+
+def MultComparison(data):
+    print 'Multivariant comparison with Tukey &&&'
+    res2 = pairwise_tukeyhsd(data[u'values'], data[u'hip'])
+    return res2[0]
+
 def kruskalWallis(data):
+    print 'Non-parametric Kruskal-Wallis test'
     F, p = stats.mstats.kruskalwallis(*data)
     if p < 0.05:
         return 'The median level is significanly different F = %f p-value = %f' % (p, F)
@@ -151,15 +163,15 @@ def divider(n, mas):
     print ANOVA(dlist)
     print kruskalWallis(dlist)
     print simpleStatistics(dlist,n,mas)
-
+    return
 
 print divider(brnch["num"], brnch["mass"])
 
 
 
-
 #visualization of brunches
 def visual(n, mas):
+    print 'function of visualization'
     global total
     nd = pd.DataFrame(columns=['hip','values'])
 
@@ -170,38 +182,15 @@ def visual(n, mas):
         for i in range(0, observes):
             nd.loc[i+observes*param, 'hip'] = str(mas[param])
             nd.loc[i+observes*param, 'values']= total.loc[i,str(mas[param])];
+    #nd.loc[:,'hip'].dtype = '|S8'
+    #nd.loc[:, 'values'].dtype = '<i4'
 
-    #print nd.loc[:,'hip']
-
-    '''  
-    trace0 = Box(
-        y=nd.loc[:,'values'],
-        x=nd.loc[:,'hip'],
-        boxpoints='all',
-        jitter=0.3,
-        pointpos=-1.8,
-        name=['kale','gate'],
-        marker=dict(
-            color=['#3D9970','#453D32']
-        ),
-        fillcolor=['#3D9970', '#453D32']
-    )
-    data = [trace0]
-    layout = Layout(
-        yaxis=dict(
-            title='normalized moisture',
-            zeroline=False
-        ),
-        boxmode='group'
-    )
-    #fig = go.Figure(data=data, layout=layout)
-    #py.plot(fig)
-    fig = Figure(data=data, layout=layout)
-    plot(fig)
-    '''
-
-
-
+    nd2 = nd.to_records()
+    nd2[(u'hip')].astype(str)
+    nd2[u'values'].astype(int)
+    #res2 = MultiComparison(nd2['values'],nd2['hip'])
+    #res2 = pairwise_tukeyhsd(nd2[u'values'], nd2[u'hip'])
+    print nd2.dtype
 
 print visual(brnch["num"], brnch["mass"])
 
@@ -212,3 +201,31 @@ print visual(brnch["num"], brnch["mass"])
 
 #write to csv
 #total.to_csv('ttt.csv', sep='\t', encoding='utf-8')
+
+#boxplots
+'''  
+trace0 = Box(
+    y=nd.loc[:,'values'],
+    x=nd.loc[:,'hip'],
+    boxpoints='all',
+    jitter=0.3,
+    pointpos=-1.8,
+    name=['kale','gate'],
+    marker=dict(
+        color=['#3D9970','#453D32']
+    ),
+    fillcolor=['#3D9970', '#453D32']
+)
+data = [trace0]
+layout = Layout(
+    yaxis=dict(
+        title='normalized moisture',
+        zeroline=False
+    ),
+    boxmode='group'
+)
+#fig = go.Figure(data=data, layout=layout)
+#py.plot(fig)
+fig = Figure(data=data, layout=layout)
+plot(fig)
+'''
